@@ -1,6 +1,5 @@
 FROM nvcr.io/nvidia/pytorch:23.10-py3
 WORKDIR /root
-ENV HUGGINGFACEHUB_API_TOKEN "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"
 
 RUN apt-get update
 RUN mkdir app
