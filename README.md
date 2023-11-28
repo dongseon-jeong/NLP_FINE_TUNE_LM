@@ -18,8 +18,7 @@ Ner
 ## 3. 트랜스포머 모델 구성
 position_encoding  
 인코더/디코더  
-어텐션 메커니즘 바디 (qkv) + bertviz  
-[참고영상](https://youtu.be/MJYBdTCwxDY?si=Rkhm3G1Ff9ZzjX68)  
+어텐션 메커니즘 바디 (qkv) + bertviz [참고영상](https://youtu.be/MJYBdTCwxDY?si=Rkhm3G1Ff9ZzjX68)  
 분류 헤드  
 파인튜닝(freezing, 분류기)  
 제로샷 러닝  
