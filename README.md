@@ -53,7 +53,7 @@ streamlit run [파일명.py]
 ```
 
 ## 8. 도커, 클라우드
-체크포인트 : [https://drive.google.com/file/d/1-5zsnJVR_kF0MoQeredj7DTSwSF-1Ikh/view?usp=drive_link]  
+[체크포인트 다운](https://drive.google.com/file/d/1-5zsnJVR_kF0MoQeredj7DTSwSF-1Ikh/view?usp=drive_link)  
   
 도커파일 이미지 빌드  
 ```
