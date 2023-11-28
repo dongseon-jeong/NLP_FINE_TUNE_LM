@@ -50,7 +50,7 @@ klue-데이터셋 : [https://huggingface.co/datasets/klue]
 streamlit : [https://docs.streamlit.io/]  
 
 ## 8. 도커, 클라우드
-체크포인트 : [https://drive.google.com/file/d/1-5zsnJVR_kF0MoQeredj7DTSwSF-1Ikh/view?usp=drive_link]
+체크포인트 : [https://drive.google.com/file/d/1-5zsnJVR_kF0MoQeredj7DTSwSF-1Ikh/view?usp=drive_link]  
 도커파일 이미지 빌드  
 인스턴스 생성 및 도커 구동  
 
