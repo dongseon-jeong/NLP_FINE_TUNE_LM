@@ -48,11 +48,21 @@ klue-데이터셋 : [https://huggingface.co/datasets/klue]
 ## 7. 모델 경량화 배포
 부동소수점  
 streamlit : [https://docs.streamlit.io/]  
+```
+streamlit run [파일명.py]
+```
 
 ## 8. 도커, 클라우드
 체크포인트 : [https://drive.google.com/file/d/1-5zsnJVR_kF0MoQeredj7DTSwSF-1Ikh/view?usp=drive_link]  
+  
 도커파일 이미지 빌드  
-인스턴스 생성 및 도커 구동  
+```
+docker build --tag [이미지명]:[버전]
+```
+인스턴스 생성 및 도커 구동
+```
+docker run -it --rm [이미지명]:[버전] /bin/bash
+```
 
 ## *파인튠참고 구름,코알파카 / 기타 W&B
 고려대-kullm : [https://github.com/nlpai-lab/KULLM]  
