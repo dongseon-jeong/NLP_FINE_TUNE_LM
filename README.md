@@ -19,9 +19,10 @@ Ner
 position_encoding  
 인코더/디코더  
 어텐션 메커니즘 바디 (qkv) + bertviz  
+[참고영상](https://youtu.be/MJYBdTCwxDY?si=Rkhm3G1Ff9ZzjX68)  
 분류 헤드  
 파인튜닝(freezing, 분류기)  
-제로샷 러닝
+제로샷 러닝  
 
 ## 4. 학습 코드 구성
 tensor 변환  
