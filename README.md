@@ -115,7 +115,7 @@ data_collator
 from transformers import DataCollatorWithPadding
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 ```
-활성함수  
+### *활성함수  
 
 sigmoid  
 $$S(x) = \frac {1}{1+e^{-x}}$$
@@ -123,15 +123,16 @@ $$S(x) = \frac {1}{1+e^{-x}}$$
 softmax  
 $$\sigma = \frac {e^{z_{i}}} {\displaystyle\sum_{j=1}^{k} e^{z_{j}}}$$
 
+### *손실함수  
+mse  
+$$\mathrm{MSE} = \frac{1}{n} \sum_{i=1}^{n}(Y_{i}-\hat{Y}_{i})^2$$
+
+rmse  
+$$\mathrm{RMSD} = \sqrt{\frac{\displaystyle\sum_{i=1}^{N}\left(x_{i}-\hat{x}_{i}\right)^{2}}{N}}$$
+
+cross_entropy  
 
 
-
-손실함수  
-```python
-mse
-rmse
-cross_entropy
-```
 optimizer  
 학습  
 weights 저장  
