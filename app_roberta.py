@@ -42,7 +42,7 @@ class BERTClass(torch.nn.Module):
         self.bert_model.push_to_hub(path,  create_pr=1, use_auth_token = True)
 
 model = BERTClass()
-model_dict = torch.load('.//best_model_weights.pt', map_location=torch.device('cpu'))
+model_dict = torch.load('C:/Users/jeong/langchain/best_model_weights.pt', map_location=torch.device('cpu'))
 model.load_state_dict(model_dict)
 model_q = quantize_dynamic(model, {torch.nn.Linear}, dtype = torch.qint8)
 
