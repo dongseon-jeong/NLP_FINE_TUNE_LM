@@ -131,6 +131,8 @@ rmse
 $$\mathrm{RMSD} = \sqrt{\frac{\displaystyle\sum_{i=1}^{N}\left(x_{i}-\hat{x}_{i}\right)^{2}}{N}}$$
 
 cross_entropy  
+$$-Y*log(y)-(1-Y)*log(1-y)$$
+
 
 
 optimizer  
