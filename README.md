@@ -120,6 +120,8 @@ data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 sigmoid  
 $$S(x) = \frac {1}{1+e^{-x}}$$
 
+![ex_screenshot](./img/sigmoid.png)  
+
 softmax  
 $$\sigma = \frac {e^{z_{i}}} {\displaystyle\sum_{j=1}^{k} e^{z_{j}}}$$
 
@@ -133,12 +135,22 @@ $$\mathrm{RMSD} = \sqrt{\frac{\displaystyle\sum_{i=1}^{N}\left(x_{i}-\hat{x}_{i}
 cross_entropy  
 $$-Y*log(y)-(1-Y)*log(1-y)$$
 
+![ex_screenshot](./img/cross.png)  
 
 
 optimizer  
 학습  
+```python
+
+```
 weights 저장  
+```python
+
+```
 hub 업로드  
+```python
+
+```
 
 ## 5. 기본 모델과 데이터셋
 klue-로버타 : [https://huggingface.co/klue/roberta-base]  
@@ -146,11 +158,18 @@ klue-데이터셋 : [https://huggingface.co/datasets/klue]
 
 ## 6.로버타 전체 코드(keyword+sentiment)
 키워드 분류 시행착오  
+
     CausalLM 모델 사용  
     SequenceClassification 모델 사용  
+    데이터셋 구축 : 멀티 라벨, 싱글 라벨  
 
-데이터셋 구축 : 멀티 라벨, 싱글 라벨  
-과적합  
+모델 구성
+
+    키워드 분류
+    감성 분석
+    하이라이트 추출
+
+과적합 해결과제  
 
 ## 7. 모델 경량화
 quantization  
