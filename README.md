@@ -24,22 +24,35 @@ input = "나는 학교에 간다"
 3 = [SEP] "나" "는" "학교" "에" "간다" [CLS]
 output = 1, 333, 234, 33, 44, 55, 0
 ```
-
 position_encoding  
+![ex_screenshot](./img/position_encoding.png)  
+
     시퀀스 위치 ids 임베딩을 input_ids 임베딩과 합침  
+
 인코더/디코더  
+![ex_screenshot](./img/transformers.png)  
+
+
 어텐션 메커니즘 바디 (qkv) + bertviz [참고영상](https://youtu.be/MJYBdTCwxDY?si=Rkhm3G1Ff9ZzjX68)  
 분류 헤드  
-### 파인튜닝(freezing, 분류기)  
-임베딩 튜닝  
-분류기 튜닝  
-임베딩+분류기 튜닝  
-프롬프트 엔지니어링  
+### *파인튜닝  
+pretrained model의 weights를 목적에 맞는 결과를 출력하도록 튜닝하는 것  
+0에서 부터 학습하는 경우 데이터양이 많이 필요하고 학습 시간, gpu리소스도 많이 소요됨  
+![ex_screenshot](./img/body_head.png)  
+-임베딩 튜닝  
+-분류기 튜닝  
+-임베딩+분류기 튜닝  
+-프롬프트 엔지니어링  
+
     퓨샷/원샷 러닝  
     chain of thought  
-프롬프트 튜닝  
+    
+-프롬프트 튜닝  
+
     p-tune/ prefix  
-adapter 튜닝  
+    
+-adapter 튜닝  
+
     LoRA/ IA3  
 
 ## 4. 학습 코드 구성
@@ -62,10 +75,12 @@ model = GPTNeoXModel.pretrained(model_name)
 model = AutoModelForCausalLM.pretrained(model_name)
 ```
 tokenizer 불러오기  
+
     input_ids : 단어사전 매칭 ids  
     attention_mask : padding 여부  
     token_type_ids : 문장 구분  
     label : 정답  
+    
 ```python
 from transformers import AutoTokenizer
 tokenizer = AutoTokenizer(model_name)
