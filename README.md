@@ -116,10 +116,16 @@ from transformers import DataCollatorWithPadding
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 ```
 활성함수  
-```python
-sigmoid
-softmax
-```
+
+sigmoid  
+$$S(x) = \frac {1}{1+e^{-x}}$$
+
+softmax  
+$$\sigma = \frac {e^{z_{i}}} {\displaystyle\sum_{j=1}^{k} e^{z_{j}}}$$
+
+
+
+
 손실함수  
 ```python
 mse
