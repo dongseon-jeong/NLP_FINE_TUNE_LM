@@ -140,15 +140,46 @@ $$-Y*log(y)-(1-Y)*log(1-y)$$
 optimizer  
 학습  
 ```python
+from transformers import Trainer
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    optimizers=(optimizer, lr_scheduler),
+    train_dataset=tokenized_datasets["train"],
+    eval_dataset=tokenized_datasets["test"],
+    tokenizer=tokenizer,
+    data_collator=data_collator,
+    compute_metrics=compute_metrics,
+)
 
+trainer.train()
 ```
-weights 저장  
+학습 모니터링
 ```python
+from transformers import TrainingArguments
+training_args = TrainingArguments(
+    output_dir="./bert_test",
+    learning_rate= 1e-5, 
+    per_device_train_batch_size=64,
+    per_device_eval_batch_size=64, 
+    num_train_epochs=5,
+    optim="adamw_hf",
+    weight_decay= 0.5 ,
+    evaluation_strategy="epoch",
+    save_strategy="epoch",
+    load_best_model_at_end=True,
+    report_to="wandb",
+)
+```
 
+
+모델 저장 
+```python
+model.save_pretrained(model_output_dir)
 ```
 hub 업로드  
 ```python
-
+model.push_to_hub("[내계정]/[레포지토리명]", create_pr=1,use_auth_token=True)
 ```
 
 ## 5. 기본 모델과 데이터셋
