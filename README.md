@@ -35,25 +35,22 @@ position_encoding
 
 어텐션 메커니즘 바디 (qkv) + bertviz [참고영상](https://youtu.be/MJYBdTCwxDY?si=Rkhm3G1Ff9ZzjX68)  
 분류 헤드  
-### *파인튜닝  
-pretrained model의 weights를 목적에 맞는 결과를 출력하도록 튜닝하는 것  
+### **파인튜닝**  
+> pretrained model의 weights를 목적에 맞는 결과를 출력하도록 튜닝하는 것  
 0에서 부터 학습하는 경우 데이터양이 많이 필요하고 학습 시간, gpu리소스도 많이 소요됨  
 ![ex_screenshot](./img/body_head.png)  
--임베딩 튜닝  
--분류기 튜닝  
--임베딩+분류기 튜닝  
--프롬프트 엔지니어링  
-
-    퓨샷/원샷 러닝  
-    chain of thought  
+- 임베딩 튜닝  
+- 분류기 튜닝  
+- 임베딩+분류기 튜닝  
+- 프롬프트 엔지니어링  
+    - 퓨샷/원샷 러닝  
+    - chain of thought  
     
--프롬프트 튜닝  
-
-    p-tune/ prefix  
+- 프롬프트 튜닝  
+    - p-tune/ prefix  
     
--adapter 튜닝  
-
-    LoRA/ IA3  
+- adapter 튜닝  
+    - LoRA/ IA3  
 
 ## 4. 학습 코드 구성
 tensor 변환  
@@ -115,28 +112,30 @@ data_collator
 from transformers import DataCollatorWithPadding
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 ```
-### *활성함수  
+***
+### **활성함수**  
 
-sigmoid  
+> sigmoid  
 $$S(x) = \frac {1}{1+e^{-x}}$$
 
 ![ex_screenshot](./img/sigmoid.png)  
 
-softmax  
+> softmax  
 $$\sigma = \frac {e^{z_{i}}} {\displaystyle\sum_{j=1}^{k} e^{z_{j}}}$$
 
-### *손실함수  
-mse  
+### **손실함수**  
+
+> mse  
 $$\mathrm{MSE} = \frac{1}{n} \sum_{i=1}^{n}(Y_{i}-\hat{Y}_{i})^2$$
 
-rmse  
+> rmse  
 $$\mathrm{RMSD} = \sqrt{\frac{\displaystyle\sum_{i=1}^{N}\left(x_{i}-\hat{x}_{i}\right)^{2}}{N}}$$
 
-cross_entropy  
+> cross_entropy  
 $$-Y*log(y)-(1-Y)*log(1-y)$$
 
 ![ex_screenshot](./img/cross.png)  
-
+***
 
 optimizer  
 학습  
