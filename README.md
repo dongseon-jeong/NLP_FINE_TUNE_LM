@@ -138,6 +138,11 @@ $$-Y*log(y)-(1-Y)*log(1-y)$$
 ***
 
 optimizer  
+> 손실함수(loss)가 최저가 되는 부분에 도달하도록 W에 손실함수의 순간변화량(미분, 기울기) 만큼 조금씩 뺀다  
+$$W-기울기 = W-d(손실함수)$$  
+
+![ex_screenshot](./img/loss.png)
+
 학습  
 ```python
 from transformers import Trainer
