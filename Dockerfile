@@ -5,6 +5,9 @@ RUN apt-get update
 RUN mkdir app
 COPY ./docker ./app
 RUN cd app
+RUN pip install git+https://github.com/haven-jeon/PyKoSpacing.git
+RUN pip install tensorflow==2.14.0
+RUN pip install kss
 RUN pip3 install streamlit
 RUN pip install datasets transformers
 
