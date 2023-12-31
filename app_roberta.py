@@ -7,6 +7,10 @@ import streamlit as st
 from torch.quantization import quantize_dynamic
 import os
 
+from pykospacing import Spacing
+from kss import split_sentences
+spacing = Spacing()
+
 HUGGINGFACEHUB_API_TOKEN = "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" 
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = HUGGINGFACEHUB_API_TOKEN
 
@@ -71,14 +75,12 @@ model_sent_q.eval()
 
 ## 앱 평션
 def results(txt):
+    txt = spacing(txt)
+    txt = " ".join(split_sentences(txt))
     # 키워드/확률 추출
     probabilities = []
-    # labels = []
-    # sentments = []
-    # highlights = []
     inputs = tokenizer(txt, return_tensors="pt")
     softm = torch.nn.Softmax(dim=1)
-
     with torch.no_grad():
         inputs = {key: value.to(device) for key, value in inputs.items()}
         ids = inputs['input_ids'].to(device, dtype = torch.long)
@@ -92,25 +94,25 @@ def results(txt):
             lbl = target_list[idx]
             token_contributions = []
             token_contributions_sent = []
-            # 감성분석
-            inputs_sent = tokenizer(f'### review: {txt} ### keyword: {lbl} ', return_tensors="pt")
+            # 감성분석/확률 추출
+            inputs_sent = tokenizer(f'### 리뷰: {txt} ### 키워드: {lbl} ', return_tensors="pt",truncation=True)
             with torch.no_grad():
                 inputs_sent = {key: value.to(model_sent_q.device) for key, value in inputs_sent.items()}
-                # 모델 호출
                 logits_sent = model_sent_q(**inputs_sent).logits
                 prob = softm(logits_sent).numpy()[0]
-                predicted_id = logits_sent.argmax().item() 
+                predicted_id = logits_sent.argmax().item()
             sentiment = model_sent_q.config.id2label[predicted_id]
-            sprob = prob[predicted_id]
+            sprob_index = prob.argmax()
+            sprob = prob[sprob_index]
 
-            # 모델에 입력 토큰 단위로 대체하면서 확률 계산
+            # 키워드 기여도
             for token_index in range(len(txt.split())):
                 replaced_txt = txt.split()
                 replaced_txt[token_index] = "[MASK]"
                 replaced_txt = " ".join(replaced_txt)
 
                 # 각 토큰을 마스크로 변환하여 변환 전후 확률 계산으로 기여도 확인
-                inputs = tokenizer(replaced_txt, return_tensors="pt")
+                inputs = tokenizer(replaced_txt, return_tensors="pt",truncation=True)
                 with torch.no_grad():
                     inputs = {key: value.to(device) for key, value in inputs.items()}
                     ids = inputs['input_ids'].to(device, dtype = torch.long)
@@ -120,26 +122,70 @@ def results(txt):
                     probabilities2 = torch.sigmoid(outputs).cpu().detach().numpy().tolist()
 
                 token_quality_probability = probabilities2[0][idx]
-                token_contribution = probability - token_quality_probability
+                token_contribution = abs(probability - token_quality_probability)
                 token_contributions.append(token_contribution)
 
-            # 가장 큰 기여도를 가진 토큰 찾기
-            max_contribution_index = np.argmax(token_contributions)
+            la = []
+            for i in range(len(token_contributions)):
+                if i == 0:
+                    ll = np.mean(np.stack((token_contributions[i], token_contributions[i+1])), axis=0)
+                elif i == len(token_contributions) - 1:
+                    ll = np.mean(np.stack((token_contributions[i-1], token_contributions[i])), axis=0)
+                else:
+                    ll = np.mean(np.stack((token_contributions[i-1], token_contributions[i], token_contributions[i+1])), axis=0)
+                la.append(ll)
 
-            for token_index in range(len(txt.split())):
-                replaced_txt = txt.split()
+            tot = [x+y for x,y in zip(token_contributions, la)]
+            max_contribution_index = np.argmax(tot)
+
+            sentence_len = len(split_sentences(txt))
+            seq_len_list = []
+            x = 0
+            for i in range(sentence_len):
+              num = len(split_sentences(txt)[i].split())
+              x = x + num
+              seq_len_list.append(x)
+
+            for idx, num in enumerate(seq_len_list):
+              if max_contribution_index <= num-1 :
+                idxx = idx
+                break
+
+            te = split_sentences(txt)[idxx]
+
+            # 감성분석 기여도
+            for token_index in range(len(te.split())):
+                replaced_txt = te.split()
                 replaced_txt[token_index] = "[MASK]"
                 replaced_txt = " ".join(replaced_txt)
-                inputs_sent = tokenizer(f'### review: {replaced_txt} ### keyword: {lbl} ', return_tensors="pt",truncation=True)
+                inputs_sent = tokenizer(f'### 리뷰: {replaced_txt} ### 키워드: {lbl} ', return_tensors="pt",truncation=True)
                 with torch.no_grad():
                     inputs_sent = {key: value.to(model_sent_q.device) for key, value in inputs_sent.items()}
                     logits_sent = model_sent_q(**inputs_sent).logits
                     prob = softm(logits_sent).numpy()[0]
 
-                token_contribution_sent = sprob - prob[predicted_id]
+                token_contribution_sent = abs(sprob - prob[sprob_index])
                 token_contributions_sent.append(token_contribution_sent)
 
-            max_contribution_index_sent = np.argmax(token_contributions_sent)
+            la = []
+            for i in range(len(token_contributions_sent)):
+                if i == 0:
+                    ll = np.mean(np.stack((token_contributions_sent[i], token_contributions_sent[i+1])), axis=0)
+                elif i == len(token_contributions_sent) - 1:
+                    ll = np.mean(np.stack((token_contributions_sent[i-1], token_contributions_sent[i])), axis=0)
+                else:
+                    ll = np.mean(np.stack((token_contributions_sent[i-1], token_contributions_sent[i], token_contributions_sent[i+1])), axis=0)
+                la.append(ll)
+
+            tot = [x+y for x,y in zip(token_contributions_sent, la)]
+            max_contribution_index_sent = np.argmax(tot)
+
+
+            if idxx == 0 :
+              max_contribution_index_sent
+            else :
+              max_contribution_index_sent = seq_len_list[idxx-1] + max_contribution_index_sent
+
 
             # 하이라이트
             if max_contribution_index_sent > max_contribution_index:
@@ -149,27 +195,6 @@ def results(txt):
             else:
                 max_txt = " ".join(txt.split()[max_contribution_index_sent:max_contribution_index+1])
 
-
-            # def find_second_largest_index(nums):
-            #     if len(nums) < 2:
-            #         return None  # 리스트에 두 개 이상의 원소가 없는 경우 None 반환
-
-            #     largest_index = 0
-            #     second_largest_index = -1
-
-            #     for i in range(1, len(nums)):
-            #         if nums[i] > nums[largest_index]:
-            #             second_largest_index = largest_index
-            #             largest_index = i
-            #         elif nums[i] != nums[largest_index]:
-            #             if second_largest_index == -1 or nums[i] > nums[second_largest_index]:
-            #                 second_largest_index = i
-
-            #     return second_largest_index
-
-            # # 두 번째로 큰 숫자의 인덱스 찾기
-            # second_largest_index = find_second_largest_index(token_contributions)
-            # second_txt = txt.split()[second_largest_index]
 
             f"Keyword: {lbl}, Highlight: {max_txt} ,Sentiment: {sentiment} "
     total_sent = tokenizer(f'### 리뷰: {txt} ### 키워드: 만족도 ', return_tensors="pt",truncation=True)
