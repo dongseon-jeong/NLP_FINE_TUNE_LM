@@ -326,6 +326,7 @@ streamlit run [파일명.py]
 
 ## 8. 도커, 클라우드 배포
 [체크포인트 다운](https://drive.google.com/file/d/1-5zsnJVR_kF0MoQeredj7DTSwSF-1Ikh/view?usp=drive_link)  
+깃클론 후 다운받은 체크포인트 파일을 docker폴더에 넣기
   
 도커파일 이미지 빌드  
 ```bash
