@@ -153,39 +153,37 @@ def results(txt):
 
             te = split_sentences(txt)[idxx]
 
-            # 감성분석 기여도
-            for token_index in range(len(te.split())):
-                replaced_txt = te.split()
-                replaced_txt[token_index] = "[MASK]"
-                replaced_txt = " ".join(replaced_txt)
-                inputs_sent = tokenizer(f'### 리뷰: {replaced_txt} ### 키워드: {lbl} ', return_tensors="pt",truncation=True)
-                with torch.no_grad():
-                    inputs_sent = {key: value.to(model_sent_q.device) for key, value in inputs_sent.items()}
-                    logits_sent = model_sent_q(**inputs_sent).logits
-                    prob = softm(logits_sent).numpy()[0]
+            if len(te.split()) == 1 :
+                max_contribution_index_sent = seq_len_list[idxx-1] + 1
+            else:
+                # 감성분석 기여도
+                for token_index in range(len(te.split())):
+                    replaced_txt = te.split()
+                    replaced_txt[token_index] = "[MASK]"
+                    replaced_txt = " ".join(replaced_txt)
+                    inputs_sent = tokenizer(f'### 리뷰: {replaced_txt} ### 키워드: {lbl} ', return_tensors="pt",truncation=True)
+                    with torch.no_grad():
+                        inputs_sent = {key: value.to(model_sent_q.device) for key, value in inputs_sent.items()}
+                        logits_sent = model_sent_q(**inputs_sent).logits
+                        prob = softm(logits_sent).numpy()[0]
 
-                token_contribution_sent = abs(sprob - prob[sprob_index])
-                token_contributions_sent.append(token_contribution_sent)
-
-            la = []
-            for i in range(len(token_contributions_sent)):
-                if i == 0:
-                    ll = np.mean(np.stack((token_contributions_sent[i], token_contributions_sent[i+1])), axis=0)
-                elif i == len(token_contributions_sent) - 1:
-                    ll = np.mean(np.stack((token_contributions_sent[i-1], token_contributions_sent[i])), axis=0)
-                else:
-                    ll = np.mean(np.stack((token_contributions_sent[i-1], token_contributions_sent[i], token_contributions_sent[i+1])), axis=0)
+                    token_contribution_sent = abs(sprob - prob[sprob_index])
+                    token_contributions_sent.append(token_contribution_sent)
+                la = []
+                for i in range(len(token_contributions_sent)):
+                    if i == 0:
+                        ll = np.mean(np.stack((token_contributions_sent[i], token_contributions_sent[i+1])), axis=0)
+                    elif i == len(token_contributions_sent) - 1:
+                        ll = np.mean(np.stack((token_contributions_sent[i-1], token_contributions_sent[i])), axis=0)
+                    else:
+                        ll = np.mean(np.stack((token_contributions_sent[i-1], token_contributions_sent[i], token_contributions_sent[i+1])), axis=0)
                 la.append(ll)
-
-            tot = [x+y for x,y in zip(token_contributions_sent, la)]
-            max_contribution_index_sent = np.argmax(tot)
-
-
-            if idxx == 0 :
-              max_contribution_index_sent
-            else :
-              max_contribution_index_sent = seq_len_list[idxx-1] + max_contribution_index_sent
-
+                tot = [x+y for x,y in zip(token_contributions_sent, la)]
+                max_contribution_index_sent = np.argmax(tot)
+                if idxx == 0 :
+                    max_contribution_index_sent
+                else :
+                    max_contribution_index_sent = seq_len_list[idxx-1] + max_contribution_index_sent
 
             # 하이라이트
             if max_contribution_index_sent > max_contribution_index:
@@ -194,9 +192,8 @@ def results(txt):
                 max_txt = " ".join(txt.split()[max_contribution_index:max_contribution_index+2])
             else:
                 max_txt = " ".join(txt.split()[max_contribution_index_sent:max_contribution_index+1])
-
-
             f"Keyword: {lbl}, Highlight: {max_txt} ,Sentiment: {sentiment} "
+
     total_sent = tokenizer(f'### 리뷰: {txt} ### 키워드: 만족도 ', return_tensors="pt",truncation=True)
     with torch.no_grad():
         total_sent = {key: value.to(model_sent_q.device) for key, value in total_sent.items()}
