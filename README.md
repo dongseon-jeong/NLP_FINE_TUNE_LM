@@ -1,4 +1,4 @@
-# FINE_TUNE_LLM
+# FINE_TUNE_LM
 
 ## 1. 허깅페이스 소개
 모델  
