@@ -11,7 +11,7 @@ from pykospacing import Spacing
 from kss import split_sentences
 spacing = Spacing()
 
-HUGGINGFACEHUB_API_TOKEN = "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" 
+HUGGINGFACEHUB_API_TOKEN = "your_key" 
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = HUGGINGFACEHUB_API_TOKEN
 
 # 디바이스 설정
