@@ -1,191 +1,28 @@
 # FINE_TUNE_LM
 
-## 1. 허깅페이스 소개
-모델  
-데이터셋  
-파이프라인  
-도큐먼트 : [https://huggingface.co/docs]  
-리더보드 : [https://huggingface.co/spaces/upstage/open-ko-llm-leaderboard]  
+## 0. 프로젝트 목적
+    리뷰 분석(키워드추출/감성분석/하이라이트추출) 시 외부 api모델을 사용 중으로 비용 이슈와 모델 고도화가 어려운 점 등의 문제로 
+    api모델을 오픈소스모델로 대체하기 위해 koAlpaca 등 언어 모델 파인튜닝하여 api모델과 동일한 기능을 구현
 
-## 2. 랭귀지 모델 소개
-CausalLM  
-SequenceClassification  
-TokenClassification  
-Summarize  
-QuestionAnswering  
-Ner  
+## 1. 프로젝트 절차
+1. 최초 모델 체인 기획
+    초기 모델은 CausalLM모델로 리뷰를 입력하면 대표 키워드와 감성분석 결과를 모두 추출하는 형태로 기획
+2. 후보 모델 선정
+   colab a100 환경에서 QLoRA로 학습이 가능한 최대 사이즈의 한국어 모델 서치
+3. 데이터 전처리
+    모델에 따른 적절한 학습 데이터 형태로 전처리
+    기존 api모델의 추론 결과 데이터를 학습데이터로 활용
+5. 학습 > 모델 정확도 파악
+6. 최종 모델 선정
+7. 모델 체인 재기획
 
-## 3. 트랜스포머 모델 구성
-tokenizer  
-```
-input = "나는 학교에 간다"
-1 = "나는" "학교에" "간다"
-2 = "나" "는" "학교" "에" "간다"
-3 = [SEP] "나" "는" "학교" "에" "간다" [CLS]
-output = 1, 333, 234, 33, 44, 55, 0
-```
-position_encoding  
-![ex_screenshot](./img/position_encoding.png)  
+휴먼 어노테이트 데이터셋으로 재학습 > 정확도 파악
+데이터 정합성 체크 > 데이터 수정 후 재학습
 
-    시퀀스 위치 ids 임베딩을 input_ids 임베딩과 합침  
-
-인코더/디코더  
-![ex_screenshot](./img/transformers.png)  
+api 기능 추가(하이라이트 추출)
+모델 경량화 및 도커 이미지 저장
 
 
-어텐션 메커니즘 바디 (qkv) + bertviz [참고영상](https://youtu.be/MJYBdTCwxDY?si=Rkhm3G1Ff9ZzjX68)  
-분류 헤드  
-### **파인튜닝**  
-> pretrained model의 weights를 목적에 맞는 결과를 출력하도록 튜닝하는 것  
-0에서 부터 학습하는 경우 데이터양이 많이 필요하고 학습 시간, gpu리소스도 많이 소요됨  
-![ex_screenshot](./img/body_head.png)  
-- 임베딩 튜닝  
-- 분류기 튜닝  
-- 임베딩+분류기 튜닝  
-- 프롬프트 엔지니어링  
-    - 퓨샷/원샷 러닝  
-    - chain of thought  
-    
-- 프롬프트 튜닝  
-    - p-tune/ prefix  
-    
-- adapter 튜닝  
-    - LoRA/ IA3  
-
-## 4. 학습 코드 구성
-tensor 변환  
-```python
-import torch
-torch.Tensor([1,5,768])
-```
-device 설정  
-```python
-#숫자는 전부 device 설정을 해야함
-import torch
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-```
-model 불러오기  
-```python
-from transformers import AutoModel, GPTNeoXModel, AutoModelForCausalLM, AutoModelForSequenceClassification
-model = AutoModel.pretrained(model_name)
-model = GPTNeoXModel.pretrained(model_name)
-model = AutoModelForCausalLM.pretrained(model_name)
-```
-tokenizer 불러오기  
-
-    input_ids : 단어사전 매칭 ids  
-    attention_mask : padding 여부  
-    token_type_ids : 문장 구분  
-    label : 정답  
-    
-```python
-from transformers import AutoTokenizer
-tokenizer = AutoTokenizer(model_name)
-```
-datasets  
-```python
-from datasets import Dataset
-dataset = Dataset.from_pandas(df)
-```
-
-|sequence_num|batch2_num|epoch1_num|num1|num2|num3|num4|num5|
-|---|---|---|---|---|---|---|---|
-|1|1|1|나|는|학교|에|간다|
-|2|1|1|학교|종|이|땡|padding|
-|3|2|1|어서|모이자|padding|||
-|4|2|1|선생님|이|우리를|||
-|5|3|1|…|…|…|…|…|
-|6|3|1|…|…|…|…|…|
-|7|4|1|…|…|…|…|…|
-|8|4|1|…|…|…|…|…|
-|9|5|1|…|…|…|…|…|
-|10|5|1|…|…|…|…|…|
-
-data_loader  
-```python
-from torch.utils.data import DataLoader
-train_dataloader = DataLoader(training_data, batch_size=64, shuffle=True)
-test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True)
-```
-data_collator  
-```python
-from transformers import DataCollatorWithPadding
-data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
-```
-***
-### **활성함수**  
-
-> sigmoid  
-$$S(x) = \frac {1}{1+e^{-x}}$$
-
-![ex_screenshot](./img/sigmoid.png)  
-
-> softmax  
-$$\sigma = \frac {e^{z_{i}}} {\displaystyle\sum_{j=1}^{k} e^{z_{j}}}$$
-
-### **손실함수**  
-
-> mse  
-$$\mathrm{MSE} = \frac{1}{n} \sum_{i=1}^{n}(Y_{i}-\hat{Y}_{i})^2$$
-
-> rmse  
-$$\mathrm{RMSD} = \sqrt{\frac{\displaystyle\sum_{i=1}^{N}\left(x_{i}-\hat{x}_{i}\right)^{2}}{N}}$$
-
-> cross_entropy  
-$$-Y*log(y)-(1-Y)*log(1-y)$$
-
-![ex_screenshot](./img/cross.png)  
-***
-
-optimizer  
-> 손실함수(loss)가 최저가 되는 부분에 도달하도록 W에 손실함수의 순간변화량(미분, 기울기) 만큼 조금씩 뺀다  
-$$W-기울기 = W-d(손실함수)$$  
-
-![ex_screenshot](./img/loss.png)
-
-학습  
-```python
-from transformers import Trainer
-trainer = Trainer(
-    model=model,
-    args=training_args,
-    optimizers=(optimizer, lr_scheduler),
-    train_dataset=tokenized_datasets["train"],
-    eval_dataset=tokenized_datasets["test"],
-    tokenizer=tokenizer,
-    data_collator=data_collator,
-    compute_metrics=compute_metrics,
-)
-
-trainer.train()
-```
-학습 모니터링
-```python
-from transformers import TrainingArguments
-training_args = TrainingArguments(
-    output_dir="./bert_test",
-    learning_rate= 1e-5, 
-    per_device_train_batch_size=64,
-    per_device_eval_batch_size=64, 
-    num_train_epochs=5,
-    optim="adamw_hf",
-    weight_decay= 0.5 ,
-    evaluation_strategy="epoch",
-    save_strategy="epoch",
-    load_best_model_at_end=True,
-    report_to="wandb",
-)
-```
-
-
-모델 저장 
-```python
-model.save_pretrained(model_output_dir)
-```
-hub 업로드  
-```python
-model.push_to_hub("[내계정]/[레포지토리명]", create_pr=1,use_auth_token=True)
-```
 
 ## 5. 기본 모델과 데이터셋
 klue-로버타 : [https://huggingface.co/klue/roberta-base]  
@@ -200,9 +37,6 @@ Llama를 기점으로 다양한 오픈 소스 모델이 공개되고 있어 llm�
 키워드 15개와 긍부정 5개로 총 75개의 분류기준이 있어 분류 정확도를 높이기 위해 키워드와 점수 분류를 각각의 별도 모델로 분류  
 추론 시에는 키워드 분류 후 분류한 키워드와 리뷰 본문을 모델에 넣어 각각 긍부정 출력  
 ![ex_screenshot](./img/diagram.png)  
-
-
-
 
 ### 모델 파인튠  
 - 시행착오(생성형 모델 사용)  
